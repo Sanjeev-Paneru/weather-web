@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, ChangeEvent } from "react";
+import React, { useEffect, useRef, useState, ChangeEvent } from "react";
 import { searchCity } from "@/src/services/geoService";
 import { CityResult } from "@/src/types/DataType";
 
@@ -8,35 +8,51 @@ interface SearchCityProps {
 }
 
 export default function SearchCity({ onSelectCity }: SearchCityProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<CityResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [isHover, setIsHover] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const onDocMouseDown = (e: MouseEvent) => {
+      const el = rootRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && !el.contains(e.target)) setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!query) return setResults([]);
+      if (!query.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       searchCity(query)
         .then((data: CityResult[] | undefined) => setResults(data || []))
         .catch(console.error)
         .finally(() => setLoading(false));
-    }, 500);
+    }, 350);
 
     return () => clearTimeout(timer);
   }, [query]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
+    setOpen(true);
   };
 
+  const showDropdown = open && (loading || results.length > 0);
+
   return (
-    <div
-      className="w-full relative"
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
-    >
+    <div ref={rootRef} className="w-full relative">
       <style>{`
         .search-input {
           font-family: var(--font-body);
@@ -52,20 +68,24 @@ export default function SearchCity({ onSelectCity }: SearchCityProps) {
       <div
         className="p-1 rounded-lg panel-shadow"
         style={{
-          background: 'linear-gradient(145deg, #b8a898, #8a7a6a)',
-          border: '1px solid #5a4030',
+          background: "linear-gradient(145deg, #b8a898, #8a7a6a)",
+          border: "1px solid #5a4030",
         }}
       >
         <input
           type="text"
           value={query}
           onChange={handleChange}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setOpen(false);
+          }}
           placeholder="Search city..."
           className="search-input w-full px-4 py-3 rounded text-sm focus:outline-none"
         />
       </div>
 
-      {loading && isHover && (
+      {loading && open && (
         <p
           style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem" }}
           className="absolute left-0 mt-2"
@@ -95,33 +115,48 @@ export default function SearchCity({ onSelectCity }: SearchCityProps) {
         </p>
       )}
 
-      {results.length > 0 && isHover && (
+      {showDropdown && (
         <ul
           className="absolute w-full shadow-lg rounded-lg mt-2 max-h-60 overflow-auto z-20"
           style={{
-            background: 'var(--bg-card)',
-            border: '2px solid #8a8680',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
+            background: "var(--bg-card)",
+            border: "2px solid #8a8680",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
           }}
         >
           {results.map((city) => (
             <li
               key={city.id}
-              onClick={() => {
+              onMouseDown={(e) => {
+                // Prevent input blur from closing before selection.
+                e.preventDefault();
                 onSelectCity(city);
                 setQuery(city.name);
                 setResults([]);
+                setOpen(false);
               }}
               style={{
-                fontFamily: 'var(--font-body)',
-                color: 'var(--text-primary)',
-                borderBottom: '1px dashed rgba(0,0,0,0.2)',
+                fontFamily: "var(--font-body)",
+                color: "var(--text-primary)",
+                borderBottom: "1px dashed rgba(0,0,0,0.2)",
               }}
               className="px-4 py-3 cursor-pointer hover:bg-yellow-50 transition-colors last:border-none"
             >
               {city.name}, {city.country}
             </li>
           ))}
+
+          {!loading && results.length === 0 && (
+            <li
+              style={{
+                fontFamily: "var(--font-body)",
+                color: "rgba(26,15,0,0.65)",
+              }}
+              className="px-4 py-3"
+            >
+              No matches.
+            </li>
+          )}
         </ul>
       )}
     </div>
