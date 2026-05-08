@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import SearchCity from "@/src/components/search/SearchCity";
 import CurrentWeatherCard from "@/src/components/weather/CurrentWeatherCard";
 import NextDaysForecast from "@/src/components/weather/NextDaysForecast";
@@ -8,8 +8,8 @@ import HighlightsGrid from "@/src/components/weather/HighlightsGrid";
 import HourlyTemperatureGraph from "@/src/components/weather/HourlyTemperatureGraph";
 import HourlyInstrumentStrip from "@/src/components/weather/HourlyInstrumentStrip";
 import ScientificInstrumentsPanel from "@/src/components/weather/ScientificInstrumentsPanel";
+import RecentCitiesModal from "@/src/components/weather/RecentCitiesModal";
 import { CityResult, FullWeatherData } from "../types/DataType";
-import { CityListSidebar } from "../components/weather";
 import { fetchFullWeatherData } from "../utiles/fetchFullWeatherData";
 
 export default function HomePage() {
@@ -17,6 +17,7 @@ export default function HomePage() {
   const [weatherData, setWeatherData] = useState<FullWeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [recentCities, setRecentCities] = useState<CityResult[]>([]);
+  const [recentOpen, setRecentOpen] = useState(false);
 
   useEffect(() => {
     if (!selectedCity) return;
@@ -46,13 +47,51 @@ export default function HomePage() {
   }, [selectedCity]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen p-6 gap-6 w-full max-w-7xl mx-auto">
-      <CityListSidebar cities={recentCities} onSelectCity={setSelectedCity} />
+    <div className="min-h-screen w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <RecentCitiesModal
+        open={recentOpen}
+        onClose={() => setRecentOpen(false)}
+        cities={recentCities}
+        onSelectCity={setSelectedCity}
+      />
 
-      <main className="flex-1 flex flex-col gap-4">
+      <main className="w-full">
         <div className="console-shell">
           <div style={{ padding: 16 }}>
-            <SearchCity onSelectCity={setSelectedCity} />
+            {/* Top controls (responsive) */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="flex-1">
+                <SearchCity onSelectCity={setSelectedCity} />
+              </div>
+
+              <button
+                type="button"
+                className="pressable"
+                onClick={() => setRecentOpen(true)}
+                style={{
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.06em",
+                  color: "rgba(26,15,0,0.9)",
+                  background: "linear-gradient(145deg,#c0b090,#8a7060)",
+                  border: "1px solid rgba(0,0,0,0.35)",
+                  minWidth: 170,
+                }}
+              >
+                Recent Cities
+                <span
+                  className="ml-2"
+                  style={{
+                    fontFamily: "var(--font-lcd)",
+                    color: "rgba(26,15,0,0.7)",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {recentCities.length}
+                </span>
+              </button>
+            </div>
 
             {loading && (
               <p
