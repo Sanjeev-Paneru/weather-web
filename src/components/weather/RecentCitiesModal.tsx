@@ -58,27 +58,33 @@ export default function RecentCitiesModal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
     <div
       role="dialog"
-      aria-modal="true"
+      aria-modal={open ? true : undefined}
       aria-labelledby={titleId}
+      aria-hidden={!open}
       className="fixed inset-0 z-50"
+      style={{ pointerEvents: open ? "auto" : "none" }}
     >
       <style>{`
         @keyframes rcmBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes rcmBackdropOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes rcmDrawerIn { from { transform: translateX(18px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes rcmDrawerOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(18px); opacity: 0; } }
         .rcm-backdrop-in { animation: rcmBackdropIn 180ms ease-out forwards; }
+        .rcm-backdrop-out { animation: rcmBackdropOut 180ms ease-in forwards; }
         .rcm-drawer-in { animation: rcmDrawerIn 220ms cubic-bezier(.2,.8,.2,1) forwards; }
+        .rcm-drawer-out { animation: rcmDrawerOut 180ms ease-in forwards; }
       `}</style>
 
       {/* Backdrop */}
       <button
         aria-label="Close recent cities"
         onClick={onClose}
-        className="absolute inset-0 w-full h-full rcm-backdrop-in"
+        disabled={!open}
+        tabIndex={open ? 0 : -1}
+        className={`absolute inset-0 w-full h-full ${open ? "rcm-backdrop-in" : "rcm-backdrop-out"}`}
         style={{
           background: "rgba(0,0,0,0.55)",
           backdropFilter: "none",
@@ -88,8 +94,9 @@ export default function RecentCitiesModal({
       {/* Drawer */}
       <div
         ref={drawerRef}
-        className="absolute right-0 top-0 h-full w-full sm:w-[420px] panel-shadow rcm-drawer-in"
+        className={`absolute right-0 top-0 h-full w-full sm:w-[420px] panel-shadow ${open ? "rcm-drawer-in" : "rcm-drawer-out"}`}
         onKeyDown={(e) => {
+          if (!open) return;
           if (e.key !== "Tab") return;
           const container = drawerRef.current;
           if (!container) return;
@@ -146,6 +153,8 @@ export default function RecentCitiesModal({
               ref={closeBtnRef}
               className="pressable"
               onClick={onClose}
+              disabled={!open}
+              tabIndex={open ? 0 : -1}
               style={{
                 padding: "10px 12px",
                 borderRadius: 10,
@@ -185,6 +194,8 @@ export default function RecentCitiesModal({
                       onSelectCity(city);
                       onClose();
                     }}
+                    disabled={!open}
+                    tabIndex={open ? 0 : -1}
                     className="w-full text-left hover-lift"
                     style={{
                       borderRadius: 12,

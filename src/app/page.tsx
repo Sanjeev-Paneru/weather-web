@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SearchCity from "@/src/components/search/SearchCity";
 import CurrentWeatherCard from "@/src/components/weather/CurrentWeatherCard";
 import NextDaysForecast from "@/src/components/weather/NextDaysForecast";
@@ -17,7 +17,28 @@ export default function HomePage() {
   const [weatherData, setWeatherData] = useState<FullWeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [recentCities, setRecentCities] = useState<CityResult[]>([]);
+
+  const [recentMounted, setRecentMounted] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const recentCloseTimerRef = useRef<number | null>(null);
+
+  const openRecent = () => {
+    if (recentCloseTimerRef.current) {
+      window.clearTimeout(recentCloseTimerRef.current);
+      recentCloseTimerRef.current = null;
+    }
+    setRecentOpen(true);
+    setRecentMounted(true);
+  };
+
+  const closeRecent = () => {
+    setRecentOpen(false);
+    if (recentCloseTimerRef.current) window.clearTimeout(recentCloseTimerRef.current);
+    recentCloseTimerRef.current = window.setTimeout(() => {
+      setRecentMounted(false);
+      recentCloseTimerRef.current = null;
+    }, 220);
+  };
 
   useEffect(() => {
     if (!selectedCity) return;
@@ -48,12 +69,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      <RecentCitiesModal
-        open={recentOpen}
-        onClose={() => setRecentOpen(false)}
-        cities={recentCities}
-        onSelectCity={setSelectedCity}
-      />
+      {recentMounted && (
+        <RecentCitiesModal
+          open={recentOpen}
+          onClose={closeRecent}
+          cities={recentCities}
+          onSelectCity={setSelectedCity}
+        />
+      )}
 
       <main className="w-full">
         <div className="console-shell">
@@ -67,7 +90,7 @@ export default function HomePage() {
               <button
                 type="button"
                 className="pressable"
-                onClick={() => setRecentOpen(true)}
+                onClick={openRecent}
                 style={{
                   borderRadius: 12,
                   padding: "12px 14px",
