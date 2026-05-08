@@ -1,7 +1,16 @@
 "use client";
 
-import React, { useEffect, useId } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import { CityResult } from "@/src/types/DataType";
+
+function getFocusable(container: HTMLElement) {
+  const nodes = container.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  return Array.from(nodes).filter(
+    (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true"
+  );
+}
 
 export default function RecentCitiesModal({
   open,
@@ -16,13 +25,37 @@ export default function RecentCitiesModal({
 }) {
   const titleId = useId();
 
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const prevFocusRef = useRef<HTMLElement | null>(null);
+
+  // Prevent background scroll while open.
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
+  // Focus management + escape + restore focus on close.
+  useEffect(() => {
+    if (!open) return;
+
+    prevFocusRef.current = document.activeElement as HTMLElement | null;
+
+    const raf = window.requestAnimationFrame(() => closeBtnRef.current?.focus());
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKeyDown);
+      prevFocusRef.current?.focus?.();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -34,11 +67,18 @@ export default function RecentCitiesModal({
       aria-labelledby={titleId}
       className="fixed inset-0 z-50"
     >
+      <style>{`
+        @keyframes rcmBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes rcmDrawerIn { from { transform: translateX(18px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .rcm-backdrop-in { animation: rcmBackdropIn 180ms ease-out forwards; }
+        .rcm-drawer-in { animation: rcmDrawerIn 220ms cubic-bezier(.2,.8,.2,1) forwards; }
+      `}</style>
+
       {/* Backdrop */}
       <button
         aria-label="Close recent cities"
         onClick={onClose}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full rcm-backdrop-in"
         style={{
           background: "rgba(0,0,0,0.55)",
           backdropFilter: "none",
@@ -47,7 +87,30 @@ export default function RecentCitiesModal({
 
       {/* Drawer */}
       <div
-        className="absolute right-0 top-0 h-full w-full sm:w-[420px] panel-shadow"
+        ref={drawerRef}
+        className="absolute right-0 top-0 h-full w-full sm:w-[420px] panel-shadow rcm-drawer-in"
+        onKeyDown={(e) => {
+          if (e.key !== "Tab") return;
+          const container = drawerRef.current;
+          if (!container) return;
+          const focusables = getFocusable(container);
+          if (focusables.length === 0) return;
+
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }}
         style={{
           background:
             "linear-gradient(135deg, rgba(61,43,31,0.96), rgba(44,31,20,0.98))",
@@ -80,6 +143,7 @@ export default function RecentCitiesModal({
 
           <div className="ml-auto">
             <button
+              ref={closeBtnRef}
               className="pressable"
               onClick={onClose}
               style={{
@@ -102,12 +166,18 @@ export default function RecentCitiesModal({
               <div className="lcd-glow-amber" style={{ fontSize: "1rem" }}>
                 No recent cities yet.
               </div>
-              <div className="engraved-label" style={{ marginTop: 8, color: "rgba(240,232,216,0.6)" }}>
+              <div
+                className="engraved-label"
+                style={{ marginTop: 8, color: "rgba(240,232,216,0.6)" }}
+              >
                 Search for a city to store it here.
               </div>
             </div>
           ) : (
-            <ul className="space-y-3" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            <ul
+              className="space-y-3"
+              style={{ listStyle: "none", padding: 0, margin: 0 }}
+            >
               {cities.map((city) => (
                 <li key={city.id}>
                   <button
