@@ -1,67 +1,96 @@
 "use client";
 
 import React from "react";
-import { Sun, Cloud, CloudRain, Moon } from "lucide-react";
+import { Sun } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-linear-to-t from-blue-600 via-blue-500 to-blue-400 py-12 ">
-      {/* Floating background icons */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <Sun
-          size={60}
-          className="absolute top-5 left-10 text-yellow-200 opacity-20 animate-float"
-        />
-        <Cloud
-          size={80}
-          className="absolute top-10 right-20 text-white opacity-10 animate-float-delayed"
-        />
-        <CloudRain
-          size={50}
-          className="absolute bottom-10 left-1/3 text-blue-200 opacity-10 animate-float"
-        />
-        <Moon
-          size={60}
-          className="absolute top-1/2 right-1/4 text-gray-100 opacity-15 animate-float-delayed"
-        />
+    <footer
+      className="relative overflow-hidden py-12 mt-12"
+      style={{
+        background: 'linear-gradient(180deg, var(--bg-primary), var(--bg-panel))',
+        borderTop: '3px solid #8a8680',
+      }}
+    >
+      {/* Leather strip with rivets (mirror of header) */}
+      <div
+        className="absolute bottom-0 inset-x-0 h-4"
+        style={{
+          background: 'linear-gradient(180deg, #4a2a1a, #2a1a0a)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1), 0 -2px 4px rgba(0,0,0,0.8)',
+        }}
+      >
+        {/* Rivets */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full"
+            style={{
+              background: 'radial-gradient(circle at 30% 30%, #ffd700, #b8860b)',
+              left: `${(i / 11) * 100}%`,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              boxShadow: 'inset -0.5px -0.5px 1px rgba(0,0,0,0.8)',
+            }}
+          />
+        ))}
       </div>
 
-      <div className="relative container mx-auto px-4">
-        {/* Footer content */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-white">
+      <div className="relative container mx-auto px-4 pb-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Logo / Brand */}
           <div className="flex items-center gap-3">
-            <Sun size={32} className="text-yellow-300 animate-pulse" />
-            <h2 className="text-2xl font-bold drop-shadow-lg">WeatherNow</h2>
+            <Sun size={32} className="text-yellow-400 opacity-70" />
+            <h2
+              style={{
+                fontFamily: 'var(--font-display)',
+                color: 'var(--text-light)',
+                fontSize: '1.5rem',
+              }}
+              className="font-bold"
+            >
+              WEATHER STATION
+            </h2>
           </div>
 
           {/* Links */}
           <div className="flex flex-col sm:flex-row gap-6 text-sm font-medium">
-            <a href="#" className="hover:text-yellow-300 transition-colors">
-              Home
-            </a>
-            <a href="#" className="hover:text-yellow-300 transition-colors">
-              Forecast
-            </a>
-            <a href="#" className="hover:text-yellow-300 transition-colors">
-              About
-            </a>
-            <a href="#" className="hover:text-yellow-300 transition-colors">
-              Contact
-            </a>
+            {['Documentation', 'API', 'About', 'Contact'].map((link) => (
+              <a
+                key={link}
+                href="#"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--text-light)',
+                }}
+                className="hover:text-yellow-400 transition-colors"
+              >
+                {link}
+              </a>
+            ))}
           </div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-white/20 my-6"></div>
+        <div
+          className="border-t my-6"
+          style={{
+            borderColor: 'rgba(200, 168, 75, 0.2)',
+          }}
+        />
 
         {/* Bottom text */}
-        <p className="text-center text-white/80 text-sm">
-          &copy; {new Date().getFullYear()} WeatherNow. All rights reserved.
+        <p
+          style={{
+            fontFamily: 'var(--font-body)',
+            color: 'rgba(240, 232, 216, 0.6)',
+          }}
+          className="text-center text-sm"
+        >
+          &copy; {new Date().getFullYear()} Skeuomorphic Weather Station. All instruments calibrated.
         </p>
       </div>
 
-      {/* Animations */}
       <style>{`
         @keyframes float {
           0%,100%{transform:translateY(0);}

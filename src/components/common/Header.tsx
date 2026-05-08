@@ -3,33 +3,33 @@
 import React, { useState, useEffect } from "react";
 import { Cloud, Sun, CloudRain, Moon } from "lucide-react";
 
-// Fetch current weather
-const fetchCurrentWeather = async (lat: number, lon: number) => {
+type HeaderCurrentWeather = {
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  weathercode: number;
+};
+
+const fetchCurrentWeather = async (lat: number, lon: number): Promise<HeaderCurrentWeather | null> => {
   const res = await fetch(
     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
   );
-  const data = await res.json();
-  return data.current_weather;
+  const data = (await res.json()) as { current_weather?: HeaderCurrentWeather };
+  return data.current_weather ?? null;
 };
 
-// Reverse geocode to get city/place name
-const fetchCityName = async (lat: number, lon: number) => {
+const fetchCityName = async (lat: number, lon: number): Promise<string> => {
   const res = await fetch(
     `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`
   );
-  const data = await res.json();
+  const data = (await res.json()) as { name?: string };
   return data.name || "Unknown Location";
 };
 
-// --- Header Component ---
 export default function Header() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchResults, setSearchResults] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [currentWeather, setCurrentWeather] = useState<any>(null);
+  const [currentWeather, setCurrentWeather] = useState<HeaderCurrentWeather | null>(null);
   const [placeName, setPlaceName] = useState<string>("Your Location");
 
-  // Get current location weather + name
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -77,62 +77,90 @@ export default function Header() {
       ];
 
   return (
-    <header className="relative overflow-hidden bg-linear-to-b from-blue-400 via-blue-500 to-blue-600 pb-12">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <Sun
-          size={80}
-          className="absolute top-10 left-10 text-yellow-200 opacity-20 animate-float"
-        />
-        <Cloud
-          size={100}
-          className="absolute top-20 right-20 text-white opacity-15 animate-float-delayed"
-        />
-        <CloudRain
-          size={60}
-          className="absolute bottom-10 left-1/4 text-blue-200 opacity-10 animate-float"
-        />
-        <Moon
-          size={70}
-          className="absolute top-1/2 right-1/3 text-gray-100 opacity-10 animate-float-delayed"
-        />
+    <header
+      className="relative overflow-hidden pb-12"
+      style={{
+        background: 'linear-gradient(135deg, var(--bg-panel), var(--bg-primary))',
+      }}
+    >
+      {/* Leather strip with rivets */}
+      <div
+        className="absolute top-0 inset-x-0 h-6"
+        style={{
+          background: 'linear-gradient(180deg, #5a3a2a, #4a2a1a)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.8)',
+        }}
+      >
+        {/* Rivets */}
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full"
+            style={{
+              background: 'radial-gradient(circle at 30% 30%, #ffd700, #b8860b)',
+              left: `${(i / 11) * 100}%`,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              boxShadow: 'inset -0.5px -0.5px 1px rgba(0,0,0,0.8)',
+            }}
+          />
+        ))}
       </div>
 
       <div className="relative container mx-auto px-4 pt-12">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <Sun size={48} className="text-yellow-300 animate-pulse" />
-            <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
-              WeatherNow
+            <Sun size={48} className="text-yellow-400 opacity-80" />
+            <h1
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '3rem',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(200,168,75,0.3)',
+              }}
+              className="font-bold"
+            >
+              WEATHER STATION
             </h1>
-            <Cloud size={48} className="text-white/80" />
+            <Cloud size={48} className="text-gray-300 opacity-60" />
           </div>
-          <p className="text-white/90 text-lg md:text-xl font-medium drop-shadow">
-            Your Accurate Weather Forecast Companion
+          <p style={{ fontFamily: 'var(--font-body)', color: 'var(--text-light)' }} className="text-lg md:text-xl font-medium">
+            Analog Weather Instrument Dashboard
           </p>
         </div>
 
-        {searchResults && (
-          <div className="mt-6 text-center text-white/90 font-medium">
-            {searchResults}
-          </div>
-        )}
+
 
         {/* Current Location Quick Weather Cards */}
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {weatherCards.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white/20 backdrop-blur-md rounded-2xl p-4 text-center hover:bg-white/30 transition-all cursor-pointer hover:scale-105"
+              className="rounded-lg p-4 text-center transition-all cursor-pointer hover:translate-y-1"
+              style={{
+                background: 'rgba(107, 58, 42, 0.3)',
+                border: '2px solid rgba(200, 168, 75, 0.3)',
+                boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.1), 0 2px 6px rgba(0,0,0,0.6)',
+              }}
             >
-              <item.icon className="mx-auto mb-2 text-white" size={32} />
-              <p className="text-white font-semibold text-sm">{item.label}</p>
-              <p className="text-white text-xl font-bold">{item.value}</p>
+              <item.icon className="mx-auto mb-2 text-gray-300" size={28} />
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem' }} className="text-gray-300">
+                {item.label}
+              </p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-lcd)',
+                  color: 'var(--lcd-green)',
+                  textShadow: '0 0 6px rgba(57,255,20,0.4)',
+                }}
+                className="text-lg font-bold"
+              >
+                {item.value}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Animations */}
       <style>{`
         @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-20px);} }
         @keyframes float-delayed { 0%,100%{transform:translateY(0);}50%{transform:translateY(-15px);} }

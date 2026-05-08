@@ -9,7 +9,7 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-teal-800 flex flex-col items-center justify-center">
+      <main className="min-h-screen flex flex-col items-center justify-start" style={{ background: 'var(--bg-primary)' }}>
         {children}
       </main>
       <Footer />

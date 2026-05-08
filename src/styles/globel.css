@@ -1,37 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Special+Elite&family=Share+Tech+Mono&display=swap');
+
 @import "tailwindcss";
 @tailwind utilities;
-@theme {
-  --color-background: #e0f2fe; 
-  --color-foreground: #0f172a;
-  --color-primary: #0284c7; 
-  --color-secondary: #facc15;
-  --color-accent: #60a5fa; 
 
-  --gradient-clear: linear-gradient(to bottom right, #38bdf8, #3b82f6);
-  --gradient-cloudy: linear-gradient(to bottom right, #94a3b8, #cbd5e1);
-  --gradient-rainy: linear-gradient(to bottom right, #2563eb, #1e3a8a);
-  --gradient-night: linear-gradient(to bottom right, #0f172a, #1e293b);
+:root {
+  /* Skeuomorphic Color Palette */
+  --bg-primary: #2c1f14;
+  --bg-panel: #3d2b1f;
+  --bg-card: #f5efe6;
+  --metal-light: #d4d0c8;
+  --metal-dark: #8a8680;
+  --glass-bg: rgba(180, 210, 240, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --leather-bg: #6b3a2a;
+  --gold-accent: #c8a84b;
+  --lcd-green: #39ff14;
+  --lcd-bg: #1a2a1a;
+  --text-primary: #1a0f00;
+  --text-light: #f0e8d8;
 
-  /*  Breakpoints */
+  /* Breakpoints */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
 
-  /*  Container padding */
+  /* Container padding */
   --container-padding-default: 1rem;
   --container-padding-sm: 1.5rem;
   --container-padding-lg: 2rem;
   --container-padding-xl: 3rem;
   --container-padding-2xl: 6rem;
 
-  /*  Fonts */
-  --font-display: "Poppins", "Satoshi", sans-serif;
-  --font-body: "Inter", sans-serif;
+  /* Fonts */
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Special Elite', cursive;
+  --font-lcd: 'Share Tech Mono', monospace;
 }
 
-/*  Container setup */
+/* Walnut wood background + cinematic lighting */
+body {
+  background: repeating-linear-gradient(
+    90deg,
+    #2c1f14 0px,
+    #3a281b 12px,
+    #2a1d13 24px
+  );
+  background-attachment: fixed;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Vignette + warm ambient light overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 700px at 30% 10%, rgba(200, 168, 75, 0.16), transparent 55%),
+    radial-gradient(900px 600px at 70% 25%, rgba(255, 210, 160, 0.10), transparent 60%),
+    radial-gradient(1400px 900px at 50% 110%, rgba(0, 0, 0, 0.55), transparent 60%),
+    radial-gradient(1200px 900px at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.02) 1px,
+      rgba(0, 0, 0, 0.02) 2px,
+      rgba(0, 0, 0, 0.02) 3px
+    );
+  opacity: 0.35;
+  z-index: 0;
+}
+
+/* Base panel shadow effect - 3D depth */
+.panel-shadow {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+              0 4px 12px rgba(0, 0, 0, 0.6),
+              0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Container setup */
 .container {
   margin-left: auto;
   margin-right: auto;
@@ -69,29 +131,274 @@
   }
 }
 
-/* 🌤️ Utility classes for weather backgrounds */
-.bg-weather-clear {
-  background: var(--gradient-clear);
+/* ============ TYPOGRAPHY ============ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
 }
 
-.bg-weather-cloudy {
-  background: var(--gradient-cloudy);
+body, p, span, input, button, label {
+  font-family: var(--font-body);
 }
 
-.bg-weather-rainy {
-  background: var(--gradient-rainy);
+.lcd-display {
+  font-family: var(--font-lcd);
+  letter-spacing: 2px;
 }
 
-.bg-weather-night {
-  background: var(--gradient-night);
+/* ============ CONSOLE SHELL ============ */
+.console-shell {
+  position: relative;
+  z-index: 1;
+  border-radius: 14px;
+  padding: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 25%),
+    linear-gradient(135deg, rgba(61, 43, 31, 0.95), rgba(44, 31, 20, 0.98));
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 45px rgba(0, 0, 0, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
-/* 💨 Subtle blur cards (for weather info display) */
-.weather-card {
-  @apply bg-white/30 backdrop-blur-md rounded-2xl shadow-lg p-6 text-center;
+.console-shell::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 18px;
+  background:
+    radial-gradient(1200px 500px at 30% 0%, rgba(200, 168, 75, 0.22), transparent 60%),
+    linear-gradient(145deg, #b8a898, #8a7a6a);
+  border: 1px solid rgba(90, 64, 48, 0.9);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  z-index: -1;
 }
 
-/* 🌦 Text shadow effect for headings */
-.text-weather {
-  text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+.metal-divider {
+  height: 8px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.24)),
+    linear-gradient(90deg, #d4d0c8, #8a8680, #d4d0c8);
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
+.engraved-label {
+  font-family: var(--font-body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: rgba(240, 232, 216, 0.75);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.lcd-recess {
+  position: relative;
+  background: var(--lcd-bg);
+  border-radius: 10px;
+  border: 3px inset rgba(0, 0, 0, 0.85);
+  box-shadow:
+    inset 0 6px 14px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 22px rgba(57, 255, 20, 0.18);
+  overflow: hidden;
+}
+
+.lcd-recess::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 1px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 3px
+    );
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.lcd-glow-green {
+  font-family: var(--font-lcd);
+  color: var(--lcd-green);
+  text-shadow: 0 0 6px rgba(57, 255, 20, 0.85);
+}
+
+.lcd-glow-amber {
+  font-family: var(--font-lcd);
+  color: #ffb347;
+  text-shadow: 0 0 6px rgba(255, 179, 71, 0.75);
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes gaugeNeedle {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(var(--rotation));
+  }
+}
+
+@keyframes thermometerFill {
+  from {
+    height: 0%;
+  }
+  to {
+    height: var(--fill-height);
+  }
+}
+
+@keyframes lcdFlicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes cardLift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+/* ============ BRASS BUTTON STYLING ============ */
+button, .button-like {
+  background: linear-gradient(145deg, #c0b090, #8a7060);
+  border: 1px solid #5a4030;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+button:active, .button-like:active {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5),
+              inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+
+button:hover, .button-like:hover {
+  background: linear-gradient(145deg, #c9b99a, #95795b);
+}
+
+/* ============ UTILITY CLASSES ============ */
+.leather-card {
+  background: linear-gradient(135deg, #7b4a3a 0%, #6b3a2a 50%, #5a2a1a 100%);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.stitched-border {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.corkboard-bg {
+  background: 
+    repeating-linear-gradient(90deg, #d4a574, #d4a574 2px, #c89560 2px, #c89560 4px),
+    repeating-linear-gradient(0deg, #d4a574, #d4a574 2px, #c89560 2px, #c89560 4px);
+  background-size: 100% 100%;
+}
+
+.glass-effect {
+  /* Physical glass: highlights + reflections (no modern blur/glassmorphism) */
+  background:
+    radial-gradient(ellipse at 30% 25%, rgba(255, 255, 255, 0.18), transparent 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(255, 255, 255, 0.08), transparent 55%),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.aged-paper {
+  background:
+    linear-gradient(135deg, #f5efe6 0%, #ede5d8 100%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.03), rgba(0,0,0,0.03) 1px, transparent 1px, transparent 6px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.paper-lined {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      #f5efe6,
+      #f5efe6 26px,
+      #d9cfbf 27px
+    );
+}
+
+.leather-strip {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 35%),
+    linear-gradient(135deg, #5a2e21, #3b1f15);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.7);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 10px 24px rgba(0,0,0,0.55);
+}
+
+.leather-strip::after {
+  content: "";
+  position: absolute;
+  inset: 3px 10px;
+  border-radius: 8px;
+  border: 1px dashed rgba(240,232,216,0.22);
+  pointer-events: none;
+}
+
+.brass-plaque {
+  background:
+    linear-gradient(145deg, #b8a898, #8a7a6a),
+    repeating-linear-gradient(
+      60deg,
+      rgba(255,255,255,0.07),
+      rgba(255,255,255,0.07) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+  border: 1px solid rgba(90, 64, 48, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -2px 4px rgba(0,0,0,0.25),
+    0 10px 30px rgba(0,0,0,0.6);
+}
+
+.hover-lift {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 14px 34px rgba(0,0,0,0.7),
+    0 2px 10px rgba(0,0,0,0.55);
+}
+
+.pressable:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 3px 10px rgba(0,0,0,0.55),
+    0 6px 14px rgba(0,0,0,0.45);
 }
