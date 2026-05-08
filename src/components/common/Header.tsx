@@ -10,20 +10,52 @@ type HeaderCurrentWeather = {
   weathercode: number;
 };
 
-const fetchCurrentWeather = async (lat: number, lon: number): Promise<HeaderCurrentWeather | null> => {
-  const res = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
-  );
-  const data = (await res.json()) as { current_weather?: HeaderCurrentWeather };
-  return data.current_weather ?? null;
+type ReverseGeocodeResult = {
+  name?: string;
+  country?: string;
+  admin1?: string;
+};
+
+type ReverseGeocodeResponse = {
+  results?: ReverseGeocodeResult[];
+};
+
+const fetchCurrentWeather = async (
+  lat: number,
+  lon: number
+): Promise<HeaderCurrentWeather | null> => {
+  try {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { current_weather?: HeaderCurrentWeather };
+    return data.current_weather ?? null;
+  } catch {
+    return null;
+  }
 };
 
 const fetchCityName = async (lat: number, lon: number): Promise<string> => {
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`
-  );
-  const data = (await res.json()) as { name?: string };
-  return data.name || "Unknown Location";
+  try {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) return "Your Location";
+
+    const data = (await res.json()) as ReverseGeocodeResponse;
+    const first = data.results?.[0];
+
+    if (!first?.name) return "Your Location";
+    if (first.country) return `${first.name}, ${first.country}`;
+    return first.name;
+  } catch {
+    // In the browser this can fail due to network/CORS; don't crash the UI.
+    return "Your Location";
+  }
 };
 
 export default function Header() {
@@ -35,12 +67,19 @@ export default function Header() {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
-        const weather = await fetchCurrentWeather(latitude, longitude);
-        setCurrentWeather(weather);
+        try {
+          const { latitude, longitude } = position.coords;
 
-        const name = await fetchCityName(latitude, longitude);
-        setPlaceName(name);
+          const [weather, name] = await Promise.all([
+            fetchCurrentWeather(latitude, longitude),
+            fetchCityName(latitude, longitude),
+          ]);
+
+          setCurrentWeather(weather);
+          setPlaceName(name);
+        } catch (err) {
+          console.error(err);
+        }
       },
       (err) => console.error(err)
     );
